@@ -1,0 +1,543 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Tripals API",
+		"description": "Tripals API Docs",
+		"version": "0.0.1"
+	},
+	"servers": [
+		{
+			"url": "http://localhost:8000/",
+			"description": "Local server"
+		}
+	],
+	"tags": [
+		{
+			"name": "Guide",
+			"description": "文章CRUD"
+		}
+	],
+	"paths": {
+		"/guide/": {
+			"get": {
+				"tags": ["Guide"],
+				"summary": "瀏覽文章.",
+				"description": "回傳導覽頁面資訊.",
+				"parameters": [
+					{
+						"name": "userno",
+						"in": "query",
+						"description": "當下的使用者編號",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "articleno",
+						"in": "query",
+						"description": "要查看的文章編號",
+						"required": true,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "獲取 Guide 文章資料.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Guide"
+								}
+							}
+						}
+					}
+				}
+			},
+			"patch": {
+				"tags": ["Guide"],
+				"summary": "更新文章.",
+				"description": "更新文章按鈕(發布草稿、發布)做的事，前端進入編輯畫面時會先取得舊的文章資料，最後需要將原始資料與修改資料比對後才將異動資料送出，後端只會更新有異動的欄位.",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/editGuide"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "更新成功.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "更新成功"
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["Guide"],
+				"summary": "新增文章.",
+				"description": "按下 WRITE 後會做的API，需先傳入會員ID，會先新增一個狀態為 draft 的空文章.",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/user/properties/userno"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "新增文章成功.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/article/properties/main_articleno"
+								},
+								"example": { "main_articleno": 2 }
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": ["Guide"],
+				"summary": "刪除文章.",
+				"description": "刪除整篇文章，需傳入文章ID，連同圖片及地點也刪除.",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/editGuide/properties/main_articleno"
+							},
+							"example": { "main_articleno": 2 }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "刪除成功.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "刪除成功"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/guide/{main_articleno}": {
+			"get": {
+				"tags": ["Guide"],
+				"summary": "取得要編輯文章的資料.",
+				"description": "按下 編輯文章 後會做的API，需傳入文章ID，會先取得原有的文章資料.",
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/get_main_articleno"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "成功取得原有文章資料.",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/getEditGuide" }
+							}
+						}
+					}
+				}
+			}
+		},
+		"/guide/content": {
+			"post": {
+				"tags": ["Guide"],
+				"summary": "新增地點.",
+				"description": "按下 新增景點 後會做的API，需先傳入主要文章ID，會新增空地點.",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/editGuide/properties/main_articleno"
+							},
+							"example": { "main_articleno": 2 }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "新增地點成功.",
+						"content": {
+							"application/json": {
+								"$ref": "#/components/schemas/article/properties/contentno"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": ["Guide"],
+				"summary": "刪除地點.",
+				"description": "按下 x 後會做的API，需先傳入主要文章ID及要刪除的地點ID.",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"main_articleno": {
+										"$ref": "#/components/schemas/article/properties/main_articleno"
+									},
+									"contentno": {
+										"$ref": "#/components/schemas/article/properties/main_articleno"
+									}
+								}
+							},
+							"example": { "main_articleno": 2, "contentno": 11 }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "刪除成功.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "刪除成功"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/guide/upload/main": {
+			"post": {
+				"tags": ["Guide"],
+				"summary": "上傳主要文章圖片.",
+				"description": "上傳主要文章圖片，需帶入主要文章編號.",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"main_articleno": {
+										"type": "integer",
+										"description": "要上傳的主要文章編號",
+										"example": 2
+									},
+									"mainImage": {
+										"type": "string",
+										"format": "binary",
+										"description": "要上傳的主要文章圖片"
+									}
+								},
+								"required": ["main_articleno", "mainImage"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "上傳成功.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "上傳成功"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/guide/upload/content": {
+			"post": {
+				"tags": ["Guide"],
+				"summary": "上傳地點圖片.",
+				"description": "上傳地點圖片，需主要文章編號及地點編號.",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"main_articleno": {
+										"type": "integer",
+										"description": "要上傳的主要文章編號",
+										"example": 2
+									},
+									"contentno": {
+										"type": "integer",
+										"description": "要上傳的地點圖片的文章編號",
+										"example": 6
+									},
+									"contentImage": {
+										"type": "string",
+										"format": "binary",
+										"description": "要上傳的景點圖片"
+									}
+								},
+								"required": ["main_articleno", "contentno", "contentImage"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "上傳成功.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "上傳成功"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"parameters": {
+			"get_main_articleno": {
+				"name": "main_articleno",
+				"in": "path",
+				"description": "主要文章流水號",
+				"required": true,
+				"schema": {
+					"type": "integer"
+				},
+				"example": 2
+			}
+		},
+		"schemas": {
+			"user": {
+				"properties": {
+					"userno": {
+						"type": "integer",
+						"format": "int64",
+						"example": { "userno": 2 }
+					}
+				}
+			},
+			"article": {
+				"properties": {
+					"main_articleno": {
+						"type": "integer",
+						"format": "int64",
+						"example": { "main_articleno": 2 }
+					},
+					"contentno": {
+						"type": "integer",
+						"format": "int64",
+						"example": { "contentno": 30 }
+					}
+				}
+			},
+			"Guide": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "email",
+						"example": "pink_panda@gmail.com"
+					},
+					"nickname": {
+						"type": "string",
+						"example": "小熊迷你裙"
+					},
+					"avatar": {
+						"type": "string",
+						"example": "/useravatar/2.png"
+					},
+					"main_title": {
+						"type": "string",
+						"example": "基隆一日遊"
+					},
+					"main_content": {
+						"type": "string",
+						"example": "沿著海岸線享受漁港美食及風景"
+					},
+					"main_location": {
+						"type": "string",
+						"example": "基隆市"
+					},
+					"main_image": {
+						"type": "string",
+						"example": "./guide/2/main_2.jpg"
+					},
+					"main_view_count": {
+						"type": "integer",
+						"format": "int64",
+						"example": 666
+					},
+					"main_liked_count": {
+						"type": "integer",
+						"format": "int64",
+						"example": 66
+					},
+					"liked": {
+						"type": "boolean",
+						"example": true
+					},
+					"hashtags": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"example": ["在地美食", "基隆", "文化探索", "深度旅遊", "老街"]
+					},
+					"spots": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"contentno": {
+									"type": "integer",
+									"format": "int64"
+								},
+								"location_index": {
+									"type": "integer",
+									"format": "int64"
+								},
+								"title": {
+									"type": "string"
+								},
+								"content": {
+									"type": "string"
+								},
+								"location": {
+									"type": "string"
+								},
+								"image": {
+									"type": "string"
+								}
+							},
+							"example": {
+								"contentno": 6,
+								"location_index": 1,
+								"title": "望幽谷",
+								"content": "望幽谷是一個V字型的山谷，可在綠油油的草地放鬆也可看到八斗子漁港來往的漁船。",
+								"location": "25.1457121,121.7954435",
+								"image": "/guide/2/content/6.jpg"
+							}
+						}
+					}
+				}
+			},
+			"editGuide": {
+				"properties": {
+					"main_articleno": {
+						"type": "integer",
+						"example": "6"
+					},
+					"main_title": {
+						"$ref": "#/components/schemas/Guide/properties/main_title"
+					},
+					"main_content": {
+						"$ref": "#/components/schemas/Guide/properties/main_content"
+					},
+					"main_location": {
+						"$ref": "#/components/schemas/Guide/properties/main_location"
+					},
+					"hashtags": {
+						"$ref": "#/components/schemas/Guide/properties/hashtags"
+					},
+					"status": {
+						"type": "string",
+						"example": "show"
+					},
+					"spots": {
+						"$ref": "#/components/schemas/Guide/properties/spots"
+					}
+				}
+			},
+			"getEditGuide": {
+				"properties": {
+					"main_articleno": {
+						"$ref": "#/components/schemas/editGuide/properties/main_articleno"
+					},
+					"main_title": {
+						"$ref": "#/components/schemas/editGuide/properties/main_title"
+					},
+					"main_content": {
+						"$ref": "#/components/schemas/editGuide/properties/main_content"
+					},
+					"main_location": {
+						"$ref": "#/components/schemas/editGuide/properties/main_location"
+					},
+					"main_image": {
+						"$ref": "#/components/schemas/Guide/properties/main_image"
+					},
+					"hashtags": {
+						"$ref": "#/components/schemas/editGuide/properties/hashtags"
+					},
+					"spots": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"contentno": {
+									"type": "integer",
+									"format": "int64"
+								},
+								"location_index": {
+									"type": "integer",
+									"format": "int64"
+								},
+								"title": {
+									"type": "string"
+								},
+								"content": {
+									"type": "string"
+								},
+								"location": {
+									"type": "string"
+								}
+							},
+							"example": {
+								"contentno": 6,
+								"location_index": 1,
+								"title": "望幽谷",
+								"content": "望幽谷是一個V字型的山谷，可在綠油油的草地放鬆也可看到八斗子漁港來往的漁船。",
+								"location": "25.1457121,121.7954435"
+							}
+						}
+					}
+				}
+			},
+			"UserInput": {
+				"properties": {
+					"username": {
+						"type": "string",
+						"example": "Jimmy"
+					},
+					"email": {
+						"type": "string",
+						"example": "test@test.com"
+					}
+				},
+				"required": ["username", "email"]
+			}
+		}
+	}
+}
